@@ -1,10 +1,11 @@
 import React from 'react';
-import Weather from './components/Weather';
+import {Entry, Info} from './components/Entry';
 
 const App = () => {
     return (
         <div>
-            <Weather />
+            <Entry />
+            <Info />
         </div>
     );
 };
