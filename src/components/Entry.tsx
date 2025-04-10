@@ -12,8 +12,8 @@ const Info = () => {
     return (
         <div className="info-container">
             <h1>Código-fonte do projeto:</h1>
-            <p>Back-end: <a href='https://github.com/nicholasyukio/phibra-back-end' target='_blank'>https://github.com/nicholasyukio/phibra-back-end</a></p>
-            <p>Front-end: <a href='https://github.com/nicholasyukio/phibra-front-end' target='_blank'>https://github.com/nicholasyukio/phibra-front-end</a></p>
+            <p>Back-end: <a href='https://github.com/nicholasyukio/phibra-back-end' rel='noreferrer' target='_blank'>https://github.com/nicholasyukio/phibra-back-end</a></p>
+            <p>Front-end: <a href='https://github.com/nicholasyukio/phibra-front-end' rel='noreferrer' target='_blank'>https://github.com/nicholasyukio/phibra-front-end</a></p>
             <p><i>Desenvolvido por Nicholas Yukio Menezes Sugimoto</i></p>
         </div>
     )
@@ -21,9 +21,9 @@ const Info = () => {
 
 const Entry = () => {
     const [records, setRecords] = useState<any[]>([]);
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [newRecord, setNewRecord] = useState({ date: '', type: 'revenue', value: 0, user: '' });
-    const [successMessage, setSuccessMessage] = useState('');
+    const [statusMessage, setStatusMessage] = useState('');
+    const [statusType, setStatusType] = useState<'success' | 'error' | ''>('');
     const total = records.reduce((sum, r) => r.type === 'revenue' ? sum + r.value : sum - r.value, 0);
 
     useEffect(() => {
@@ -32,17 +32,34 @@ const Entry = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Date:', newRecord.date);
-        console.log('Type:', newRecord.type);
-        console.log('Value:', newRecord.value);
-        console.log('User:', newRecord.user);
-        await addEntry(newRecord);
-        setRecords(await getEntry());
-        console.log(records);
-        setNewRecord({ date: '', type: 'revenue', value: 0, user: '' });
-        setSuccessMessage('Lançamento adicionado com sucesso!');
-        setTimeout(() => setSuccessMessage(''), 3000);
-    };
+    
+        if (!newRecord.date || !newRecord.type || !newRecord.user.trim() || isNaN(newRecord.value) || newRecord.value <= 0) {
+            setStatusMessage('Por favor, preencha todos os campos corretamente.');
+            setStatusType('error');
+            setTimeout(() => {
+                setStatusMessage('');
+                setStatusType('');
+            }, 3000);
+            return;
+        }
+    
+        try {
+            await addEntry(newRecord);
+            setRecords(await getEntry());
+            setNewRecord({ date: '', type: 'revenue', value: 0, user: '' });
+            setStatusMessage('Lançamento adicionado com sucesso!');
+            setStatusType('success');
+        } catch (error) {
+            console.error(error);
+            setStatusMessage('Erro ao adicionar lançamento. Verifique os dados e tente novamente.');
+            setStatusType('error');
+        }
+    
+        setTimeout(() => {
+            setStatusMessage('');
+            setStatusType('');
+        }, 3000);
+    };    
 
     const handleDateChange = (date: Date | null) => {
         if (date) {
@@ -79,10 +96,10 @@ const Entry = () => {
     return (
         <div className="entry-container">
             <h1>Lançamento de Receita/Despesa</h1>
-            {successMessage && (
-            <div className="success-message">
-                {successMessage}
-            </div>
+            {statusMessage && (
+            <p style={{ color: statusType === 'success' ? 'green' : 'red' }}>
+                {statusMessage}
+            </p>
             )}
             <form onSubmit={handleSubmit}>
                 <label htmlFor="unit">Selecione o tipo do lançamento:</label>
@@ -94,31 +111,57 @@ const Entry = () => {
                 <option value="revenue">Receita</option>
                 <option value="cost">Despesa</option>
                 </select>
-                <label htmlFor="date">Selecione a data do evento:</label>
-                <DatePicker
-                selected={newRecord.date ? parseISO(newRecord.date) : null}
-                onChange={handleDateChange}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="Selecione a data"
-                />
-                {/* <input type="date" value={newRecord.date} onChange={e => setNewRecord({ ...newRecord, date: e.target.value })} /> */}
-                <label htmlFor="value">Selecione o valor do lançamento:</label>
-                <input type="number" value={newRecord.value} onChange={e => setNewRecord({ ...newRecord, value: parseInt(e.target.value) })} />
-                <label htmlFor="user">Origem/Destino da Receita/Despesa:</label>
+                <div className="two-columns">
+                    <div>
+                        <label htmlFor="date">Selecione a data do evento:</label>
+                        <DatePicker
+                        selected={newRecord.date ? parseISO(newRecord.date) : null}
+                        onChange={handleDateChange}
+                        dateFormat="dd/MM/yyyy"
+                        placeholderText="Selecione a data"
+                        />
+                    </div>
+                    <div>
+                    <label htmlFor="value">Selecione o valor do lançamento:</label>
+                        <input
+                        type="number"
+                        step="0.01"
+                        value={newRecord.value}
+                        onChange={e => {
+                            const raw = e.target.value.replace(',', '.');
+                            const numeric = parseFloat(raw);
+                            if (!isNaN(numeric)) {
+                            const rounded = parseFloat(numeric.toFixed(2));
+                            setNewRecord({ ...newRecord, value: rounded });
+                            } else {
+                            setNewRecord({ ...newRecord, value: 0.00 });
+                            }
+                        }}                  
+                        style={{ appearance: 'textfield' }} // remove setas no Firefox
+                        className="no-spinner" // e usa CSS pra Chrome
+                        />
+                    </div>
+                </div>
+                <label htmlFor="user">
+                Referência ({newRecord.type === 'revenue' ? 'Origem' : 'Destino'}) da {newRecord.type === 'revenue' ? 'Receita' : 'Despesa'}:
+                </label>
                 <input type="text" value={newRecord.user} onChange={e => setNewRecord({ ...newRecord, user: e.target.value })} />
                 <button type="submit">Adicionar lançamento</button>
             </form>
             <ul>
+                <li><b>Data e hora (UTC-3) de registro - Data do evento - Tipo - Valor - Referência</b></li>
                 {records.map(f => (
                   <li key={f.id} style={{ color: f.type === 'revenue' ? 'green' : 'red' }}>
-                    ({new Date(f.createdAt).toLocaleString('pt-BR')}) - {new Date(f.date).toLocaleDateString('pt-BR')} - {f.type === 'revenue' ? 'Receita' : 'Despesa'} - R$ {f.value} - {f.user}
+                    ({new Date(f.createdAt).toLocaleString('pt-BR')}) - {new Date(f.date).toLocaleDateString('pt-BR')} - {f.type === 'revenue' ? 'Receita' : 'Despesa'} - R$ {f.value.toFixed(2)} - {f.user}
                   </li>
                 ))}
-                <p><strong>Saldo atual:</strong> R$ {total}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <p><strong>Saldo atual:</strong> R$ {total.toFixed(2)}</p>
+                <button type="button" onClick={handleExportCSV}>
+                    Exportar como CSV
+                </button>
+                </div>
             </ul>
-            <button type="button" onClick={handleExportCSV}>
-            Exportar como CSV
-            </button>
         </div>
     );
 };

@@ -1,3 +1,15 @@
+  .two-columns {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .two-columns.label {
+    font-weight: bold;
+    margin-bottom: 0.2rem;
+  }
+
   .entry-container {
     max-width: 600px;
     width: 70%;
@@ -33,6 +45,7 @@
   }
 
   label {
+    display: block;
     font-weight: bold;
     margin-bottom: 0.25rem;
   }
