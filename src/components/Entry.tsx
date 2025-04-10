@@ -8,6 +8,19 @@ import { getEntry, addEntry } from '../services/Connect';
 import './Entry.css';
 registerLocale('pt-BR', ptBR);
 
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return isMobile;
+};
+
+
 const Info = () => {
     return (
         <div className="info-container">
@@ -25,6 +38,7 @@ const Entry = () => {
     const [statusMessage, setStatusMessage] = useState('');
     const [statusType, setStatusType] = useState<'success' | 'error' | ''>('');
     const total = records.reduce((sum, r) => r.type === 'revenue' ? sum + r.value : sum - r.value, 0);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         getEntry().then(setRecords);
@@ -86,7 +100,9 @@ const Entry = () => {
     
         const link = document.createElement("a");
         link.href = url;
-        link.setAttribute("download", "lancamentos.csv");
+        const now = new Date();
+        const timestamp = now.toISOString().replace(/[:.-]/g, '').slice(0, 15); // yyyyMMddThhmmss
+        link.setAttribute("download", `lancamentos_${timestamp}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -111,6 +127,36 @@ const Entry = () => {
                 <option value="revenue">Receita</option>
                 <option value="cost">Despesa</option>
                 </select>
+                {isMobile && (
+                    <>
+                    <label htmlFor="date">Selecione a data do evento:</label>
+                    <DatePicker
+                    selected={newRecord.date ? parseISO(newRecord.date) : null}
+                    onChange={handleDateChange}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="Selecione a data"
+                    />
+                    <label htmlFor="value">Selecione o valor do lançamento:</label>
+                    <input
+                    type="number"
+                    step="0.01"
+                    value={newRecord.value}
+                    onChange={e => {
+                        const raw = e.target.value.replace(',', '.');
+                        const numeric = parseFloat(raw);
+                        if (!isNaN(numeric)) {
+                        const rounded = parseFloat(numeric.toFixed(2));
+                        setNewRecord({ ...newRecord, value: rounded });
+                        } else {
+                        setNewRecord({ ...newRecord, value: 0.00 });
+                        }
+                    }}                  
+                    style={{ appearance: 'textfield' }} // remove setas no Firefox
+                    className="no-spinner" // e usa CSS pra Chrome
+                    />
+                    </>
+                )}
+                {!isMobile && (
                 <div className="two-columns">
                     <div>
                         <label htmlFor="date">Selecione a data do evento:</label>
@@ -142,6 +188,7 @@ const Entry = () => {
                         />
                     </div>
                 </div>
+                )}
                 <label htmlFor="user">
                 Referência ({newRecord.type === 'revenue' ? 'Origem' : 'Destino'}) da {newRecord.type === 'revenue' ? 'Receita' : 'Despesa'}:
                 </label>
