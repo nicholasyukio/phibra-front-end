@@ -81,14 +81,30 @@
     padding: 0.8rem;
     border-bottom: 1px solid #ddd;
   }
+
+  p {
+    padding: 0.8rem;
+  }
+
+  h1 {
+    padding: 0.5rem;
+  }
   
   @media (max-width: 600px) {
     .entry-container {
       padding: 0.5rem;
     }
+
+    .info-container {
+      padding: 0.5rem;
+    }
   
     input, button {
       font-size: 0.9rem;
+    }
+
+    a {
+      font-size: 0.75rem;
     }
   }
   
