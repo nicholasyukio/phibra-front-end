@@ -159,7 +159,7 @@ const Entry = () => {
                 {!isMobile && (
                 <div className="two-columns">
                     <div>
-                        <label htmlFor="date">Selecione a data do evento:</label>
+                        <label htmlFor="date">Data do evento:</label>
                         <DatePicker
                         selected={newRecord.date ? parseISO(newRecord.date) : null}
                         onChange={handleDateChange}
@@ -168,7 +168,7 @@ const Entry = () => {
                         />
                     </div>
                     <div>
-                    <label htmlFor="value">Selecione o valor do lançamento:</label>
+                    <label htmlFor="value">Valor do lançamento (R$):</label>
                         <input
                         type="number"
                         step="0.01"
