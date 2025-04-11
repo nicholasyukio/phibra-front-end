@@ -137,7 +137,7 @@ const Entry = () => {
                     dateFormat="dd/MM/yyyy"
                     placeholderText="Selecione a data"
                     />
-                    <label htmlFor="value">valor do lançamento (R$):</label>
+                    <label htmlFor="value">Valor do lançamento (R$):</label>
                     <input
                     type="number"
                     step="0.01"
