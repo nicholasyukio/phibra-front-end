@@ -27,7 +27,8 @@ const Info = () => {
             <h1>Código-fonte do projeto:</h1>
             <p>Back-end: <a href='https://github.com/nicholasyukio/phibra-back-end' rel='noreferrer' target='_blank'>https://github.com/nicholasyukio/phibra-back-end</a></p>
             <p>Front-end: <a href='https://github.com/nicholasyukio/phibra-front-end' rel='noreferrer' target='_blank'>https://github.com/nicholasyukio/phibra-front-end</a></p>
-            <p><i>Desenvolvido por Nicholas Yukio Menezes Sugimoto</i></p>
+            <p>O <b>front-end</b> foi desenvolvido com Typescript, React e Axios, com deploy feito na Vercel; o <b>back-end</b> foi desenvolvido com C#, ASP.NET, Entity Framework e SQLite, com deploy feito na Railway.</p>
+            <p><i>Desenvolvido por Nicholas Yukio Menezes Sugimoto, 10 de abril de 2025</i></p>
         </div>
     )
 }
